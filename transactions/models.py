@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 class Transaction(models.Model):
     plan_type = models.CharField(max_length=10)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="transactions")
     payment_date = models.DateTimeField(auto_now_add=True)
     invoice = models.URLField(max_length=100)
 

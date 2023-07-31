@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 class Property(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.PROTECT)
+    owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="properties")
     city = models.CharField(max_length=50)
     address = models.CharField(max_length=200)
     is_active = models.BooleanField(default=True)
@@ -16,7 +16,7 @@ class Property(models.Model):
 
 class Room(models.Model):
     room_number = models.CharField(max_length=10)
-    property = models.ForeignKey(Property, on_delete=models.PROTECT)
+    property = models.ForeignKey(Property, on_delete=models.PROTECT, related_name='rooms')
     tenant = models.ForeignKey(User, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)
 
