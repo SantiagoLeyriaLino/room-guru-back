@@ -37,11 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'messages',
+    'messages_tenants',
     'transactions',
     'tasks_reminders',
     'properties_rooms',
-    'landlords_tenants',
 ]
 
 MIDDLEWARE = [
@@ -80,8 +79,12 @@ WSGI_APPLICATION = 'room_guru.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'room_guru',
+        'USER': 'postgres',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost', 
+        'PORT': '5432',
     }
 }
 

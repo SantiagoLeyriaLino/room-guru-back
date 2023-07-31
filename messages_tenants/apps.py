@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class LandlordsTenantsConfig(AppConfig):
+class MessagesTenantsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'landlords_tenants'
+    name = 'messages_tenants'
