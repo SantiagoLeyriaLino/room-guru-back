@@ -1,11 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from users.models import CustomUser
 from properties_rooms.models import Room
 
 # Create your models here.
 
 class Message(models.Model):
-    tenant = models.ForeignKey(User, on_delete=models.PROTECT, related_name='messages')
+    tenant = models.ForeignKey(CustomUser, on_delete=models.PROTECT, related_name='messages')
     message = models.TextField()
     room_number = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='messages')
 
