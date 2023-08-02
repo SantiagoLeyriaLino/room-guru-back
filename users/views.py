@@ -8,32 +8,56 @@ import json
 from .models import CustomUser
 
 
+def model_data(user):
+         user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'is_active': user.is_active,
+                    'phone_number': user.phone_number, 
+                    'contract': user.contract, 
+                    'rent_payment_date': user.rent_payment_date, 
+                    'debtor': user.debtor, 
+                    'contract_end_date': user.contract_end_date, 
+                    'plan_type':user.plan_type,
+                    'properties': list(user.properties.all().values()),
+                    'transactions': list(user.transactions.all().values()),
+                    'tasks': list(user.tasks.all().values()),
+                    'messages': list(user.messages.all().values()),
+                }
+         return user_data
+
+
+
 class Users_views(View):
     
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
-    
 
     def get(self, request, id=0):
 
         if id>0:
-            userList = list(CustomUser.objects.filter(id=id).values())
-            if len(userList)>0:
-                user = userList[0]
-                data = {"message":"success", "user":user}
+            try:
+                user = CustomUser.objects.get(id=id)
+                user_data = model_data(user)
+                data = {'message': 'success', 'user': user_data}
                 return JsonResponse(data, status=200)
-            else:
-                data = {"message":"user not found"}
+            except CustomUser.DoesNotExist:
+                data = {'message': 'user not found'}
                 return JsonResponse(data, status=400)
             
         else:
-            users = list(CustomUser.objects.values())
-            if len(users)>0:
-                data = {"message":"success", "users":users}
+            users = CustomUser.objects.all()
+            users_data = []
+            for user in users:
+                user_data=model_data(user)
+                users_data.append(user_data)
+            if len(users_data)>0:
+                data = {'message':'success', 'users':users_data}
                 return JsonResponse(data, status=200)
             else:
-                data = {"message":"users not found"}
+                data = {'message':'users not found'}
                 return JsonResponse(data, status=400)
 
 
@@ -51,7 +75,7 @@ class Users_views(View):
             user.set_password(password)
             user.save()
 
-        userData = model_to_dict(user)
+        userData = model_data(user)
         data = {'message':'user created', 'user':userData}
         return JsonResponse(data, status=201)
 
@@ -63,8 +87,7 @@ class Users_views(View):
         if user.exists():
             user.update(**jd)
             updated_user = user.first()
-            user_data = model_to_dict(updated_user)
-            user_data.pop('password', None)
+            user_data = model_data(updated_user)
             data = {'message':'success', 'user': user_data}
             return JsonResponse(data, status=200)
         
@@ -86,8 +109,7 @@ class User_Login(View):
 
           user = authenticate(request, username=username, password=password)
           if user is not None:
-              data_user = model_to_dict(user)
-              data_user.pop('password')
+              data_user = model_data(user)
               return JsonResponse({'message':'login success', 'user':data_user}, status=200)
           else:
             try:

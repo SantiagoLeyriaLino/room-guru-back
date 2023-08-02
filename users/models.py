@@ -10,4 +10,4 @@ class CustomUser(AbstractUser):
     rent_payment_date = models.DateField(null=True)
     debtor = models.BooleanField(default=False)
     contract_end_date = models.DateField(null=True)
-    plan_type = models.CharField(max_length=20, null=True)
+    plan_type = models.CharField(max_length=20, null=True, default=True)
