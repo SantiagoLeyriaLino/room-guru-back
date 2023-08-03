@@ -24,9 +24,9 @@ def model_data(user):
                     'transactions': list(user.transactions.all().values()),
                     'tasks': list(user.tasks.all().values()),
                     'messages': list(user.messages.all().values()),
+                    'room': list(user.room.all().values())[0]
                 }
          return user_data
-
 
 
 class Users_views(View):

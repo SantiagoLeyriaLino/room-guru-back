@@ -17,7 +17,7 @@ class Property(models.Model):
 class Room(models.Model):
     room_number = models.CharField(max_length=10)
     property = models.ForeignKey(Property, on_delete=models.PROTECT, related_name='rooms')
-    tenant = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
+    tenant = models.ForeignKey(CustomUser, on_delete=models.PROTECT, related_name='room', null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

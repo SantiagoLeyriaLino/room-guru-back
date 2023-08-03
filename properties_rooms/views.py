@@ -22,6 +22,16 @@ def model_data(property):
     }
     return property_data
 
+def model_data_room(room):
+    room_data = {
+        'id' : room.id,
+        'room_number' : room.room_number,
+        'property' : model_data(room.property) if room.property else None,
+        'tenant' : model_user_data(room.tenant) if room.tenant else None,
+        'is_active' : room.is_active,
+    }
+    return room_data
+
 def model_user_data(user):
          user_data = {
                     'id': user.id,
@@ -55,6 +65,37 @@ class Properties(View):
                  data = {'message':'Property not found'}
                  return JsonResponse(data, status=400)
         else:
+            if 'owner' in request.GET:     
+                owner_id = request.GET.get('owner')
+                owner = None
+                property_city = request.GET.get('city')
+                    
+                if owner_id is not None:
+                    try:
+                        owner = CustomUser.objects.get(id=owner_id)
+                    except CustomUser.DoesNotExist:
+                        data = {'message': 'non-existent user'}
+                        return JsonResponse(data, status=400)
+                    
+                    if property_city is not None:
+                        properties = Property.objects.filter(owner=owner, city=property_city)
+                        properties_data = []
+                        for property in properties:
+                            property_data = model_data(property)
+                            properties_data.append(property_data)
+                        if len(properties_data)<1:
+                            return JsonResponse({'message':'properties not found'}, status = 400)
+                        data = {'message': 'success', 'properties': properties_data}
+                        return JsonResponse(data, status=200)
+                    
+                properties = Property.objects.filter(owner=owner)
+                properties_data = []
+                for property in properties:
+                    property_data = model_data(property)
+                    properties_data.append(property_data)
+                data = {'message': 'success', 'properties': properties_data}
+                return JsonResponse(data, status=200)
+                
             properties = Property.objects.all()
             properties_data = []
             for property in properties:
@@ -95,9 +136,82 @@ class Properties(View):
             property.update(**jd)
             updated_property = property.first()
             property_data = model_data(updated_property)
-            data = {'message':'success', 'user': property_data}
+            data = {'message':'success', 'property': property_data}
             return JsonResponse(data, status=200)
         
         else:
             data={'message':'property not found'}
+            return JsonResponse(data, status=400)
+
+    
+class Rooms(View):
+    
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id=0):
+        if id >0:
+            try:
+                room = Room.objects.get(id=id)
+                room_data = model_data_room(room)
+                data = {'message':'success', 'room':room_data}
+                return JsonResponse(data, status=200)
+            except Room.DoesNotExist:
+                data = {'message':'room not found'}
+                return JsonResponse(data, status=400)
+        
+        rooms = Room.objects.all()
+
+        rooms_data = []
+        for room in rooms:
+            room_data = model_data_room(room)
+            rooms_data.append(room_data)
+
+        if len(rooms_data)<1:
+            data = {'message':'no rooms registered'}
+            return JsonResponse(data, status = 400)
+        data = {'message':'success', 'rooms':rooms_data}
+        return JsonResponse(data, status=200)
+
+    def post(self, request):
+        try:
+            jd = json.loads(request.body)
+            room_number = jd.get('room_number')
+            property_id = jd.get('property')
+            tenant_id = jd.get('tenant') if 'tenant' in jd else None
+            tenant = None 
+
+            property = Property.objects.get(id = property_id)
+            if tenant_id is not None:
+                tenant = CustomUser.objects.get(id = tenant_id)
+                if tenant.room is not None:
+                    return JsonResponse({'message':'registered tenant'}, status = 400)
+            
+            if Room.objects.filter(room_number=room_number, property=property):
+                data = {'message':'existent room'}
+                return JsonResponse(data, status = 400)
+            
+            room = Room.objects.create(room_number=room_number, property = property, tenant = tenant)
+            room_data = model_data_room(room)
+            data = {'message':'success', 'room':room_data}
+            return JsonResponse(data, status=200)
+
+        except:
+            data = {'message':'invalid data'}
+            return JsonResponse(data, status=400)
+
+    def put(self,request, id):
+        jd = json.loads(request.body)
+        room = Room.objects.filter(id=id)
+
+        if room.exists():
+            room.update(**jd)
+            updated_room = room.first()
+            room_data = model_data_room(updated_room)
+            data = {'message':'success', 'room': room_data}
+            return JsonResponse(data, status=200)
+        
+        else:
+            data={'message':'room not found'}
             return JsonResponse(data, status=400)
