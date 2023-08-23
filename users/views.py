@@ -47,6 +47,7 @@ class Users_views(View):
                 data = {'message': 'user not found'}
                 return JsonResponse(data, status=400)
             
+            #comentario de prueba
         else:
             users = CustomUser.objects.all()
             users_data = []
